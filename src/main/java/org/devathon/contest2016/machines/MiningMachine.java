@@ -97,7 +97,6 @@ public class MiningMachine extends Machine implements Listener{
 		miner.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_PICKAXE));
 		miner.getEquipment().setItemInOffHand(new ItemStack(Material.TORCH));
 		miner.teleport(getHomeLocation().add(0.5, 1.5, 0.5));
-		miner.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 0, true, false));
 		minerName.setOverrideTargetLocation(getMiner().getLocation());
 		miner.setRemoveWhenFarAway(false);
 		miner.setCanPickupItems(true);
@@ -584,10 +583,8 @@ public class MiningMachine extends Machine implements Listener{
 			ItemStack is = e.getEntity().getItemStack();
 			if (getCurrentLocation().getBlock().getType() == Material.CHEST){
 				Chest c = (Chest)getCurrentLocation().getBlock().getState();
-				if (c.getInventory().contains(Material.AIR)) {
-					c.getInventory().addItem(is);
-					e.setCancelled(true);
-				}
+				c.getInventory().addItem(is);
+				e.setCancelled(true);
 			}
 		}
 	}
