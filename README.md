@@ -52,6 +52,8 @@ For example; the Cookie machine will tell you how many cookies it's created, whi
 
 ![MineLog](http://i.imgur.com/GpFw9l6.png)
 
+Also I forgot to add a way of destroying machines, so currently you have to go into Creative and break the box, unless I remembered to add the ability to break the chest to disable it.
+
 ## Theme
 
 The theme for the 2016 Devathon Contest is: **Machines!**
