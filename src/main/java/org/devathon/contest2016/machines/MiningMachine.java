@@ -96,6 +96,7 @@ public class MiningMachine extends Machine implements Listener{
 					if (isRunning()) {
 						if (getFuel() > 0){
 							runMover();
+							b.getWorld().spawnParticle(Particle.REDSTONE, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 							if (getFuel() < 100) {
 								if (b.getInventory().contains(Material.COAL)) {
 									ItemStack coal = b.getInventory().getItem(b.getInventory().first(Material.COAL));
@@ -105,6 +106,7 @@ public class MiningMachine extends Machine implements Listener{
 										b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.COAL)));
 									}
 									fuel += 5;
+									b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 								}
 								if (b.getInventory().contains(Material.COAL_BLOCK)) {
 									ItemStack coalB = b.getInventory().getItem(b.getInventory().first(Material.COAL_BLOCK));
@@ -115,6 +117,7 @@ public class MiningMachine extends Machine implements Listener{
 										b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.COAL_BLOCK)));
 									}
 									fuel += 30;
+									b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 								}
 								if (getFuel() > 100){
 									fuel = 100;
@@ -141,6 +144,7 @@ public class MiningMachine extends Machine implements Listener{
 									b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.COAL)));
 								}
 								fuel += 5;
+								b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 							}
 							if (b.getInventory().contains(Material.COAL_BLOCK)) {
 								ItemStack coalB = b.getInventory().getItem(b.getInventory().first(Material.COAL_BLOCK));
@@ -151,9 +155,11 @@ public class MiningMachine extends Machine implements Listener{
 									b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.COAL_BLOCK)));
 								}
 								fuel += 30;
+								b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 							}
 						}
 						currentState = State.NEEDPOWER;
+						getMinerName().setDisplay("&cCan't locate the home console! Paused!");
 						getMachineNameCurrent().setDisplay("&cNo power going to Control Panel");
 						getMachineNameHome().setDisplay("&cFuel Level: &l" +  getFuel() +"%");
 						b.getWorld().spawnParticle(Particle.BARRIER, getHomeLocation().clone().add(0.5, 1.5, 0.5), 5, 0, 0, 0);
@@ -169,8 +175,11 @@ public class MiningMachine extends Machine implements Listener{
 	private long oresFound = 0;
 	private ArrayList<Block> ores = new ArrayList<>();
 	private int scannedDistance = 0;
+	private Block closestOre;
 
 	private void runMover(){
+
+		OfflinePlayer p = Bukkit.getPlayer(getOwnerUUID());
 		if (movesSinceHome == 0){
 			if (!move(Direction.NORTH)){
 				if (!move(Direction.SOUTH)){
@@ -191,10 +200,17 @@ public class MiningMachine extends Machine implements Listener{
 
 			if (scannedDistance <= 100) {
 				scannedDistance += 15;
-				OfflinePlayer p = Bukkit.getPlayer(getOwnerUUID());
 				for (Block b : BlockLooping.loopSphere(miner.getLocation(), scannedDistance, true)) {
 					if (b.getType().name().toLowerCase().replace("_", " ").contains(" ore")) {
 						if (!ores.contains(b)) {
+							if (closestOre == null){
+								closestOre = b;
+							}else{
+								if (closestOre.getLocation().distance(miner.getLocation()) > b.getLocation().distance(miner.getLocation())){
+									closestOre = b;
+								}
+							}
+							p.getPlayer().spawnParticle(Particle.END_ROD, b.getLocation().add(0.5, 0.5, 0.5), 10, 0.5, 0.5, 0.5);
 							oresFound++;
 							ores.add(b);
 						}
@@ -202,6 +218,7 @@ public class MiningMachine extends Machine implements Listener{
 				}
 				minerName.setDisplay("&e&oScanning for ores... &7(&eFound " + oresFound + " within a " + scannedDistance + " block range&7)");
 				if (p.isOnline()) {
+					p.getPlayer().spawnParticle(Particle.SMOKE_NORMAL, closestOre.getLocation().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 					p.getPlayer().spawnParticle(Particle.FIREWORKS_SPARK, miner.getLocation(), 200, scannedDistance / 2, scannedDistance / 2, scannedDistance / 2, 0);
 				}
 			}else{
@@ -209,8 +226,12 @@ public class MiningMachine extends Machine implements Listener{
 				currentState = State.MINING;
 			}
 		}else{
+			minerName.setDisplay("&aMining~ &7(&e" + Math.round(closestOre.getLocation().distance(miner.getLocation())) + " blocks away from target&7)");
 			if (getHomeLocation().distance(miner.getLocation()) > 100){
 				currentState = State.RETURNINGHOME;
+			}
+			if (p.isOnline()) {
+				p.getPlayer().spawnParticle(Particle.SMOKE_NORMAL, closestOre.getLocation().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 			}
 			movesSinceHome++;
 		}
@@ -263,6 +284,7 @@ public class MiningMachine extends Machine implements Listener{
 	private void onStandClick(PlayerInteractAtEntityEvent e){
 		if (e.getRightClicked() == miner){
 			e.setCancelled(true);
+			minerName.setDisplay("&eBoop!");
 		}
 	}
 
