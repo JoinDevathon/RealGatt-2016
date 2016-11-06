@@ -26,12 +26,22 @@ public class Machine implements Listener{
 
 	private BukkitTask task;
 
+	private boolean running = false;
+
 	public Machine(Location start, Player p, String name){
 		this.homeLocation = start;
 		this.ownerUUID = p.getUniqueId();
 		this.machineUUID = UUID.randomUUID();
 		this.name = name;
 		this.currentLocation = start;
+	}
+
+	protected boolean isRunning() {
+		return running;
+	}
+
+	protected void setRunning(boolean running) {
+		this.running = running;
 	}
 
 	protected void setupMachine(){
