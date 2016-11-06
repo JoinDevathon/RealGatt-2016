@@ -8,33 +8,33 @@ First things first; Create a Cookie Machine. For this; you'll need the following
 * 1x Button
 * 1x Chest
 
-http://i.imgur.com/sld2Haq.png
+![Cookie1](http://i.imgur.com/sld2Haq.png)
 
 Which will give you the Cookie Machine!~
 
 Next you want to name your creation! So grab an anvil, and rename that sucker!
 
-http://i.imgur.com/jUA4nbV.png
+![Cookie2](http://i.imgur.com/jUA4nbV.png)
 
 Good job!
 
-http://i.imgur.com/DecllrC.png
+![Cookie3](http://i.imgur.com/DecllrC.png)
 
 Now, find a nice and open spot (I couldn't be bothered adding any block checks; so make sure there's a free spot 1 block in the X direction for the chest to pop up).
 
-http://i.imgur.com/4R5bFuM.jpg
+![Cookie4](http://i.imgur.com/4R5bFuM.jpg)
 
 Ah, that looks good! I think it needs some power now. Whack a lever and some redstone dust to it and watch some magic!
 
-http://i.imgur.com/ZZ5m2E9.jpg
+![Cookie5](http://i.imgur.com/ZZ5m2E9.jpg)
 
 Oh wait. It needs something to make the cookies out of. This is a machine; not a magic portal! If only there was some way of knowing what to put in it... Oh wait. There is! "Put Wheat and Sugar in here". Maybe you should do that?
 
-http://i.imgur.com/p81eEVp.jpg
+![Cookie6](http://i.imgur.com/p81eEVp.jpg)
 
 Well done! You did it! Enjoy all your cookez!
 
-http://i.imgur.com/0s6AVtx.png
+![Cookie7](http://i.imgur.com/0s6AVtx.png)
 
 ## Theme
 
