@@ -414,6 +414,38 @@ public class MiningMachine extends Machine implements Listener{
 			return l.clone().add(-1, 0, 1).getBlock();
 		}
 
+		if (isOre(l.clone().add(1, 1, 1).getBlock())){
+			return l.clone().add(1, 1, 1).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, 1, -1).getBlock())){
+			return l.clone().add(-1, 1, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(1, 1, -1).getBlock())){
+			return l.clone().add(1, 1, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, 1, 1).getBlock())){
+			return l.clone().add(-1, 1, 1).getBlock();
+		}
+
+		if (isOre(l.clone().add(1, -1, 1).getBlock())){
+			return l.clone().add(1, -1, 1).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, -1, -1).getBlock())){
+			return l.clone().add(-1, -1, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(1, -1, -1).getBlock())){
+			return l.clone().add(1, -1, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, -1, 1).getBlock())){
+			return l.clone().add(-1, -1, 1).getBlock();
+		}
+
 		Block closestOre = null;
 		for (Block b : ores) {
 			if (closestOre == null){
