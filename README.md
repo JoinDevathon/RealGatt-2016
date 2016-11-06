@@ -44,6 +44,14 @@ Cbs making a tutorial on this one. Basically; craft a box using a Chest, Iron Pi
 
 Whack the box down, give it some power and fill up the chest with a bit of coal or coal blocks (Coal provides 3 energy, Coal Blocks provide 30.). The minion will start scanning, and begin to run around!
 
+### General Notes
+
+If you right-click the control box (the Command Block), it will give you the status of the machine, and some information depending on what type of machine it is.
+
+For example; the Cookie machine will tell you how many cookies it's created, while the Mining Machine will show a recent log.
+
+![MineLog](http://i.imgur.com/GpFw9l6.png)
+
 ## Theme
 
 The theme for the 2016 Devathon Contest is: **Machines!**
