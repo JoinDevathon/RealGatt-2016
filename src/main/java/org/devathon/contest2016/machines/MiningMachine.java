@@ -171,7 +171,7 @@ public class MiningMachine extends Machine implements Listener{
 								} else {
 									b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.COAL)));
 								}
-								fuel += 5;
+								fuel += 3;
 								b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 							}
 							if (b.getInventory().contains(Material.COAL_BLOCK)) {
@@ -186,6 +186,7 @@ public class MiningMachine extends Machine implements Listener{
 								b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 							}
 						}
+						miner.setAI(false);
 						currentState = State.NEEDPOWER;
 						getMinerName().setDisplay("&cCan't locate the home console! Paused!");
 						getMachineNameCurrent().setDisplay("&cNo power going to Control Panel");
@@ -448,12 +449,16 @@ public class MiningMachine extends Machine implements Listener{
 
 		Block closestOre = null;
 		for (Block b : ores) {
-			if (closestOre == null){
-				closestOre = b;
-			}else{
-				if (closestOre.getLocation().distance(l) > b.getLocation().distance(l)){
+			if (isOre(b)) {
+				if (closestOre == null) {
 					closestOre = b;
+				} else {
+					if (closestOre.getLocation().distance(l) > b.getLocation().distance(l)) {
+						closestOre = b;
+					}
 				}
+			}else{
+				ores.remove(b);
 			}
 		}
 		return closestOre;
