@@ -42,6 +42,8 @@ Well done! You did it! Enjoy all your cookez!
 
 Cbs making a tutorial on this one. Basically; craft a box using a Chest, Iron Pickaxe, a Button and Two Redstone Dust. Shapeless recipe so doesn't matter where you put it.
 
+Also; if the targetted block is above the minion, he will slowly build up towards this, and *maybe* break the blocks afterwards. Otherwise; enjoy the dirt around the place :)
+
 Whack the box down, give it some power and fill up the chest with a bit of coal or coal blocks (Coal provides 3 energy, Coal Blocks provide 30.). The minion will start scanning, and begin to run around!
 
 ### General Notes
