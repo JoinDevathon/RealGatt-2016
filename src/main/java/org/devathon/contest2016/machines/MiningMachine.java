@@ -104,7 +104,7 @@ public class MiningMachine extends Machine implements Listener{
 	}
 
 	private void logItem(String s){
-		log.add("(" + new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(System.currentTimeMillis())) + ") " + s);
+		log.add("&8(&c" + new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(System.currentTimeMillis())) + "&8)&e " + s);
 	}
 
 	@Override
@@ -239,7 +239,7 @@ public class MiningMachine extends Machine implements Listener{
 				scannedDistance += 15;
 				logItem("Beginning scan with radius " + scannedDistance);
 				for (Block b : BlockLooping.loopSphere(miner.getLocation(), scannedDistance, true)) {
-					if (b.getType().name().toLowerCase().replace("_", " ").contains(" ore")) {
+					if (isOre(b)) {
 						if (!ores.contains(b) && surroundedByAir(b.getLocation())) {
 							if (closestOre == null){
 								closestOre = b;
@@ -255,7 +255,7 @@ public class MiningMachine extends Machine implements Listener{
 					}
 				}
 				minerName.setDisplay("&e&oScanning for ores... &7(&eFound " + oresFound + " within a " + scannedDistance + " block range&7)");
-				if (p.isOnline()) {
+				if (p.isOnline() && closestOre != null) {
 					p.getPlayer().spawnParticle(Particle.SMOKE_NORMAL, closestOre.getLocation().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 					p.getPlayer().spawnParticle(Particle.FIREWORKS_SPARK, miner.getLocation(), 200, scannedDistance / 2, scannedDistance / 2, scannedDistance / 2, 0);
 				}
@@ -292,7 +292,7 @@ public class MiningMachine extends Machine implements Listener{
 						closestOre.breakNaturally(new ItemStack(Material.IRON_PICKAXE));
 						miningPoints = 0;
 						ores.remove(closestOre);
-						closestOre = getNearestBlock(miner.getLocation());
+						closestOre = getNearestBlock(closestOre.getLocation());
 						currentState = State.WALKING;
 						miner.setAI(true);
 
@@ -368,7 +368,52 @@ public class MiningMachine extends Machine implements Listener{
 
 	}
 
+	private boolean isOre(Block b){
+		return b.getType().name().toLowerCase().replace("_", " ").contains(" ore");
+	}
+
 	private Block getNearestBlock(Location l){
+
+		if (isOre(l.clone().add(1, 0, 0).getBlock())){
+			return l.clone().add(1, 0, 0).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, 0, 0).getBlock())){
+			return l.clone().add(-1, 0, 0).getBlock();
+		}
+
+		if (isOre(l.clone().add(0, 1, 0).getBlock())){
+			return l.clone().add(0, 1, 0).getBlock();
+		}
+
+		if (isOre(l.clone().add(0, -1, 0).getBlock())){
+			return l.clone().add(0, -1, 0).getBlock();
+		}
+
+		if (isOre(l.clone().add(0, 0, 1).getBlock())){
+			return l.clone().add(0, 0, 1).getBlock();
+		}
+
+		if (isOre(l.clone().add(0, 0, -1).getBlock())){
+			return l.clone().add(0, 0, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(1, 0, 1).getBlock())){
+			return l.clone().add(1, 0, 1).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, 0, -1).getBlock())){
+			return l.clone().add(-1, 0, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(1, 0, -1).getBlock())){
+			return l.clone().add(1, 0, -1).getBlock();
+		}
+
+		if (isOre(l.clone().add(-1, 0, 1).getBlock())){
+			return l.clone().add(-1, 0, 1).getBlock();
+		}
+
 		Block closestOre = null;
 		for (Block b : ores) {
 			if (closestOre == null){
