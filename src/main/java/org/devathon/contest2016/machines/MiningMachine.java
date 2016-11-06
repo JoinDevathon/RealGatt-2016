@@ -279,6 +279,9 @@ public class MiningMachine extends Machine implements Listener{
 				currentState = State.RETURNINGHOME;
 			}
 			else{
+				if (!isOre(closestOre)){
+					closestOre = getNearestBlock(miner.getLocation());
+				}
 				currentState = State.WALKING;
 				if (closestOre.getLocation().distance(miner.getLocation()) < 2){
 					if (rnd.nextInt() * 100 < 20){
@@ -299,9 +302,6 @@ public class MiningMachine extends Machine implements Listener{
 
 					}
 				}else{
-					if (!isOre(closestOre)){
-						closestOre = getNearestBlock(miner.getLocation());
-					}
 					if (prevLoc == null){
 						prevLoc = miner.getLocation();
 					}else{
