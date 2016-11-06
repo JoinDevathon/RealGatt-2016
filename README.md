@@ -36,6 +36,14 @@ Well done! You did it! Enjoy all your cookez!
 
 ![Cookie7](http://i.imgur.com/0s6AVtx.png)
 
+### Mining Machine
+
+![Mining1](http://i.imgur.com/JmOYwTx.jpg)
+
+Cbs making a tutorial on this one. Basically; craft a box using a Chest, Iron Pickaxe, a Button and Two Redstone Dust. Shapeless recipe so doesn't matter where you put it.
+
+Whack the box down, give it some power and fill up the chest with a bit of coal or coal blocks (Coal provides 3 energy, Coal Blocks provide 30.). The minion will start scanning, and begin to run around!
+
 ## Theme
 
 The theme for the 2016 Devathon Contest is: **Machines!**
