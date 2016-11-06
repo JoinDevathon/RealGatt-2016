@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -99,7 +100,7 @@ public class MiningMachine extends Machine implements Listener{
 		miner.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 0, true, false));
 		minerName.setOverrideTargetLocation(getMiner().getLocation());
 		miner.setRemoveWhenFarAway(false);
-
+		miner.setCanPickupItems(true);
 		runMachine();
 	}
 
@@ -573,5 +574,21 @@ public class MiningMachine extends Machine implements Listener{
 			}
 		}
 		return r;
+	}
+
+	// Events
+
+	@EventHandler
+	private void onItemSpawn(ItemSpawnEvent e){
+		if (e.getEntity().getLocation().distance(miner.getLocation()) < 3){
+			ItemStack is = e.getEntity().getItemStack();
+			if (getCurrentLocation().getBlock().getType() == Material.CHEST){
+				Chest c = (Chest)getCurrentLocation().getBlock().getState();
+				if (c.getInventory().contains(Material.AIR)) {
+					c.getInventory().addItem(is);
+					e.setCancelled(true);
+				}
+			}
+		}
 	}
 }
