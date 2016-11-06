@@ -270,6 +270,16 @@ public class MiningMachine extends Machine implements Listener{
 		return false;
 	}
 
+	private boolean moveTo(Location l){
+		try {
+			Object entityInsentient = Reflection.obcClass("entity.CraftLivingEntity").getMethod("getHandle").invoke(e);
+			Object navigation = Reflection.nmsClass("EntityInsentient").getMethod("getNavigation").invoke(entityInsentient);
+			navigation.getClass().getMethod("a", double.class, double.class, double.class, double.class).invoke(navigation, l.getX(), l.getY(), l.getZ(), s.doubleValue());
+		} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e1) {
+			e1.printStackTrace();
+		}
+	}
+
 	@Override
 	public void destroy(String reason){
 		getHomeLocation().getBlock().setType(Material.AIR);
