@@ -60,6 +60,10 @@ public class MachineManager implements Listener{
 				String n = ChatColor.stripColor(cb.getName()).replace("Cookie Machine [", "").replaceAll("]", "").trim();
 				e.getPlayer().sendMessage(ChatColor.GREEN + "You've setup a Cookie Machine! " + ChatColor.GRAY + "(" + ChatColor.YELLOW + n + ChatColor.GRAY + ")");
 				registerMachine(new CookieMachine(cb.getLocation(), e.getPlayer(), n));
+			}else if (cb.getName().contains("Mining Machine")){
+				String n = ChatColor.stripColor(cb.getName()).replace("Mining Machine [", "").replaceAll("]", "").trim();
+				e.getPlayer().sendMessage(ChatColor.GREEN + "You've setup a Mining Machine! " + ChatColor.GRAY + "(" + ChatColor.YELLOW + n + ChatColor.GRAY + ")");
+				registerMachine(new MiningMachine(cb.getLocation(), e.getPlayer(), n));
 			}
 		}
 	}
@@ -92,24 +96,18 @@ public class MachineManager implements Listener{
 				}*/
 				if (e.getCurrentItem().toString().equalsIgnoreCase(ai.getItem(2).toString())) {
 					if (ai.getItem(2).getType() == Material.COMMAND || e.getCurrentItem().getType() == Material.COMMAND) {
-						Bukkit.broadcastMessage("is machine = yes");
 						if (ai.getItem(2).containsEnchantment(Enchantment.DURABILITY) || e.getCurrentItem().containsEnchantment(Enchantment.DURABILITY)) {
-							Bukkit.broadcastMessage("is cookie machine");
 							ItemStack newItem = ai.getItem(2);
 							ItemMeta im = newItem.getItemMeta();
 							String name = ChatColor.stripColor(im.getDisplayName());
 							im.setDisplayName(DevathonPlugin.getInst().color("&dCookie Machine &7[&e" + name + "&7]"));
 							newItem.setItemMeta(im);
 						} else if (e.getCurrentItem().containsEnchantment(Enchantment.DAMAGE_ALL)) {
-							e.setCancelled(true);
-							ai.clear();
 							ItemStack newItem = ai.getItem(2);
 							ItemMeta im = newItem.getItemMeta();
 							String name = ChatColor.stripColor(im.getDisplayName());
-							im.setDisplayName(DevathonPlugin.getInst().color("&dMining Machine &7[&e" + name + "&7]"));
+							im.setDisplayName(DevathonPlugin.getInst().color("&cMining Machine &7[&e" + name + "&7]"));
 							newItem.setItemMeta(im);
-							e.setCurrentItem(newItem);
-							e.setCursor(newItem);
 						}
 					}
 				}
@@ -123,19 +121,26 @@ public class MachineManager implements Listener{
 			if (e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.COMMAND){
 				e.setCancelled(true);
 				CommandBlock cb = (CommandBlock)e.getClickedBlock().getState();
-				Machine machine = getMachineFromKey(cb.getCommand());
-				if (machine == null){
-					System.out.println("Not a machine");
-					return;
-				}
-				if (machine.getOwnerUUID() == e.getPlayer().getUniqueId()) {
-					e.getPlayer().sendMessage(ChatColor.GRAY + "This is your machine!");
-					if (machine instanceof CookieMachine) {
-						CookieMachine cm = (CookieMachine) machine;
-						e.getPlayer().sendMessage(cm.getMachineStatus());
+				if (!cb.getCommand().equalsIgnoreCase("")) {
+					try{
+						UUID.fromString(cb.getCommand());
+					}catch (IllegalArgumentException iae){
+						return;
 					}
-				}else{
-					e.getPlayer().sendMessage(ChatColor.RED + "This isn't your Machine!");
+					Machine machine = getMachineFromKey(cb.getCommand());
+					if (machine == null) {
+						System.out.println("Not a machine");
+						return;
+					}
+					if (machine.getOwnerUUID() == e.getPlayer().getUniqueId()) {
+						e.getPlayer().sendMessage(ChatColor.GRAY + "This is your machine!");
+						if (machine instanceof CookieMachine) {
+							CookieMachine cm = (CookieMachine) machine;
+							e.getPlayer().sendMessage(cm.getMachineStatus());
+						}
+					} else {
+						e.getPlayer().sendMessage(ChatColor.RED + "This isn't your Machine!");
+					}
 				}
 			}
 		}

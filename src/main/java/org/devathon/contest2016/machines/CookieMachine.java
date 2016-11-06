@@ -56,9 +56,21 @@ public class CookieMachine extends Machine implements Listener{
 						if (b.getInventory().contains(Material.WHEAT) && b.getInventory().contains(Material.SUGAR)) {
 							getMachineNameHome().setDisplay("&a" + getOwnerName() + "'s Cookie Machine  ✔");
 							ItemStack sugar = b.getInventory().getItem(b.getInventory().first(Material.SUGAR));
-							b.getInventory().getItem(b.getInventory().first(Material.SUGAR)).setAmount(sugar.getAmount() - 1);
+							if (sugar.getAmount() - 1 > 0) {
+								b.getInventory().getItem(b.getInventory().first(Material.SUGAR)).setAmount(sugar.getAmount() - 1);
+							}else{
+								b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.SUGAR)));
+							}
+
 							ItemStack wheat = b.getInventory().getItem(b.getInventory().first(Material.WHEAT));
-							b.getInventory().getItem(b.getInventory().first(Material.WHEAT)).setAmount(wheat.getAmount() - 1);
+
+							if (wheat.getAmount() - 1 > 0){
+								b.getInventory().getItem(b.getInventory().first(Material.WHEAT)).setAmount(wheat.getAmount() - 1);
+							}else{
+								b.getInventory().remove(b.getInventory().getItem(b.getInventory().first(Material.WHEAT)));
+							}
+
+
 							b.getWorld().playEffect(b.getLocation(), Effect.BREWING_STAND_BREW, 0);
 							b.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 							b.getWorld().dropItemNaturally(getHomeLocation().add(0.5, 1.5, 0.5), new ItemStack(Material.COOKIE));
@@ -83,21 +95,20 @@ public class CookieMachine extends Machine implements Listener{
 		}, 20, 20));
 	}
 
+	@Override
+	public void destroy(String reason){
+		getHomeLocation().getBlock().setType(Material.AIR);
+		getMachineNameHome().destroy();
+		getMachineNameCurrent().destroy();
+		System.out.println("destroyed machine " + getName() + ". reason: " + reason);
+	}
+
 	private void checkCanRun(){
 		setRunning(getHomeLocation().getBlock().isBlockPowered());
 		/*  || getHomeLocation().add(1, 0, 0).getBlock().isBlockPowered() ||
 			getHomeLocation().add(0, 1, 0).getBlock().isBlockPowered() || getHomeLocation().add(0, 0, 1).getBlock().isBlockPowered() ||
 			getHomeLocation().add(-1, 0, 0).getBlock().isBlockPowered() || getHomeLocation().add(0, -1, 0).getBlock().isBlockPowered() ||
 			getHomeLocation().add(0, 0, -1).getBlock().isBlockPowered()*/
-	}
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onRedstoneUpdate(BlockRedstoneEvent e){
-		if (e.getNewCurrent() > 0 && e.getBlock() == getHomeLocation().getBlock() && !isRunning()){
-			setRunning(true);
-		}else if (e.getNewCurrent() == 0){
-			setRunning(false);
-		}
 	}
 
 	@Override

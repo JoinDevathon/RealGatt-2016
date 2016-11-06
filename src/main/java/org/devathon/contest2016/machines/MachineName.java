@@ -2,6 +2,7 @@ package org.devathon.contest2016.machines;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.scheduler.BukkitTask;
 import org.devathon.contest2016.DevathonPlugin;
@@ -20,6 +21,9 @@ public class MachineName {
 	private ArmorStand stand;
 
 	private boolean targetHome;
+
+	private boolean overrideTarget = false;
+	private Location overrideTargetLocation;
 
 	public MachineName(Machine machine, String name, long updatetime){
 		this.display = name;
@@ -50,14 +54,34 @@ public class MachineName {
 				}else{
 					stand.setCustomNameVisible(true);
 				}
-				if (targetHome) {
-					stand.teleport(machine.getHomeLocation().add(0.5, 1.5, 0.5));
+				if (!overrideTarget) {
+					if (targetHome) {
+						stand.teleport(machine.getHomeLocation().add(0.5, 1.5, 0.5));
+					} else {
+						stand.teleport(machine.getCurrentLocation().add(0.5, 1.5, 0.5));
+					}
 				}else{
-					stand.teleport(machine.getCurrentLocation().add(0.5, 1.5, 0.5));
+					stand.teleport(overrideTargetLocation);
 				}
 				stand.setCustomName(cc(display));
 			}
 		}, updateTime, updateTime);
+	}
+
+	public boolean isOverrideTarget() {
+		return overrideTarget;
+	}
+
+	public void setOverrideTarget(boolean overrideTarget) {
+		this.overrideTarget = overrideTarget;
+	}
+
+	public Location getOverrideTargetLocation() {
+		return overrideTargetLocation;
+	}
+
+	public void setOverrideTargetLocation(Location overrideTargetLocation) {
+		this.overrideTargetLocation = overrideTargetLocation;
 	}
 
 	public String getDisplay() {

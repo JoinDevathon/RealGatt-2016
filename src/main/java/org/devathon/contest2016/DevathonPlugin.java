@@ -40,7 +40,7 @@ public class DevathonPlugin extends JavaPlugin {
     private void registerRecipes(){
 	    ItemStack miningMachine = new ItemStack(Material.COMMAND);
 	    ItemMeta im = miningMachine.getItemMeta();
-	    im.setDisplayName(color("&dMining Machine &7[&eNo Name&7]"));
+	    im.setDisplayName(color("&cMining Machine &7[&eNo Name&7]"));
 	    List<String> loreList = new ArrayList<>();
 	    loreList.add(color("&eRename me in an anvil to set my name!"));
 	    im.setLore(loreList);
@@ -65,7 +65,7 @@ public class DevathonPlugin extends JavaPlugin {
 	    ShapelessRecipe cookieRecipe = new ShapelessRecipe(cookieMachine);
 	    cookieRecipe.addIngredient(2, Material.REDSTONE)
 			    .addIngredient(1, Material.COOKIE)
-			    .addIngredient(1, Material.STONE_BUTTON);
+			    .addIngredient(1, Material.STONE_BUTTON).addIngredient(1, Material.CHEST);
 
 	    Bukkit.addRecipe(machineRecipe);
 	    Bukkit.addRecipe(cookieRecipe);

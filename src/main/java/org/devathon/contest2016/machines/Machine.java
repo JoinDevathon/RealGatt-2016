@@ -128,7 +128,7 @@ public class Machine implements Listener{
 		if (isRunning()){
 			return DevathonPlugin.getInst().color("&a Current Status: Running ✔    " + getExtraInformation());
 		}else{
-			return DevathonPlugin.getInst().color("&c Current Status: Not Running ❌    " + getExtraInformation());
+			return DevathonPlugin.getInst().color("&c Current Status: Not Running X    " + getExtraInformation());
 		}
 	}
 
