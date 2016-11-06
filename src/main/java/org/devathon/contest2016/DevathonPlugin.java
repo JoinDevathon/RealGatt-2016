@@ -27,6 +27,7 @@ public class DevathonPlugin extends JavaPlugin {
 	    registerRecipes();
 	    this.machineManager = new MachineManager();
 	    Bukkit.getPluginManager().registerEvents(getMachineManager(), this);
+	    System.out.println("Evoltr is bae. Evoltr x Gatt 2016. Everyone ships it. (Do I get extra points now, bae? <3)");
     }
 
     @Override
