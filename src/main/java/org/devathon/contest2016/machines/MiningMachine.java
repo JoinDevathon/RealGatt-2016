@@ -265,6 +265,13 @@ public class MiningMachine extends Machine implements Listener{
 				currentState = State.MINING;
 			}
 		}else{
+			if (!isOre(closestOre)){
+				closestOre = getNearestBlock(miner.getLocation());
+				if (!isOre(closestOre)){
+					currentState = State.RETURNINGHOME;
+					return;
+				}
+			}
 			miner.getWorld().playSound(miner.getLocation(), Sound.ENTITY_IRONGOLEM_STEP, 2, 2);
 
 			if (getHomeLocation().distance(miner.getLocation()) < 1 && currentState == State.RETURNINGHOME){
@@ -279,9 +286,7 @@ public class MiningMachine extends Machine implements Listener{
 				currentState = State.RETURNINGHOME;
 			}
 			else{
-				if (!isOre(closestOre)){
-					closestOre = getNearestBlock(miner.getLocation());
-				}
+
 				currentState = State.WALKING;
 				if (closestOre.getLocation().distance(miner.getLocation()) < 2){
 					if (rnd.nextInt() * 100 < 20){
