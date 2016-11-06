@@ -1,9 +1,12 @@
 package org.devathon.contest2016.machines;
 
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
+import org.devathon.contest2016.DevathonPlugin;
 
 import java.util.UUID;
 
@@ -17,7 +20,7 @@ public class Machine implements Listener{
 	}
 
 	private Location homeLocation;
-	private String name;
+	private String name, ownerName;
 	private UUID ownerUUID, machineUUID;
 
 	private Location currentLocation;
@@ -28,12 +31,30 @@ public class Machine implements Listener{
 
 	private boolean running = false;
 
+	private MachineName machineNameHome, machineNameCurrent;
+
 	public Machine(Location start, Player p, String name){
+		this.ownerName = p.getDisplayName();
 		this.homeLocation = start;
 		this.ownerUUID = p.getUniqueId();
 		this.machineUUID = UUID.randomUUID();
 		this.name = name;
 		this.currentLocation = start;
+		this.machineNameHome = new MachineName(this, this.name + " home base", 20);
+		this.machineNameHome.setTargetHome(true);
+		this.machineNameCurrent = new MachineName(this, this.name, 20);
+	}
+
+	public String getOwnerName() {
+		return ownerName;
+	}
+
+	public MachineName getMachineNameHome() {
+		return machineNameHome;
+	}
+
+	public MachineName getMachineNameCurrent() {
+		return machineNameCurrent;
 	}
 
 	protected boolean isRunning() {
@@ -60,8 +81,12 @@ public class Machine implements Listener{
 		this.task = task;
 	}
 
-	public void destroy(){
-
+	public void destroy(String reason){
+		getHomeLocation().getBlock().setType(Material.AIR);
+		getCurrentLocation().getBlock().setType(Material.AIR);
+		getMachineNameHome().destroy();
+		getMachineNameCurrent().destroy();
+		System.out.println("destroyed machine " + getName() + ". reason: " + reason);
 	}
 
 
@@ -75,7 +100,7 @@ public class Machine implements Listener{
 	}
 
 	public Location getHomeLocation() {
-		return homeLocation;
+		return homeLocation.clone();
 	}
 
 	public String getName() {
@@ -91,10 +116,24 @@ public class Machine implements Listener{
 	}
 
 	public Location getCurrentLocation() {
-		return currentLocation;
+		return currentLocation.clone();
 	}
 
 	protected void setCurrentLocation(Location currentLocation) {
-		this.currentLocation = currentLocation;
+		this.currentLocation = currentLocation.clone();
 	}
+
+
+	public String getMachineStatus(){
+		if (isRunning()){
+			return DevathonPlugin.getInst().color("&a Current Status: Running ✔    " + getExtraInformation());
+		}else{
+			return DevathonPlugin.getInst().color("&c Current Status: Not Running ❌    " + getExtraInformation());
+		}
+	}
+
+	protected String getExtraInformation(){
+		return "";
+	}
+
 }

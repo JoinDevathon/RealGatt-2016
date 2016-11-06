@@ -17,19 +17,28 @@ import org.devathon.contest2016.DevathonPlugin;
  */
 public class CookieMachine extends Machine implements Listener{
 
+	private long cookiesMade = 0;
+
 	public CookieMachine(Location start, Player p, String name) {
 		super(start, p, name);
 		super.setRelatedClass(this);
+		setupMachine();
 	}
 
 	@Override
 	public void setupMachine() {
-		getHomeLocation().getBlock().setType(Material.CHEST);
-		getHomeLocation().add(1, 0, 0).getBlock().setType(Material.COMMAND);
+		getHomeLocation().clone().add(1, 0, 0).getBlock().setType(Material.CHEST);
 		getHomeLocation().getWorld().playSound(getHomeLocation(), Sound.BLOCK_ANVIL_USE, 1, 1);
-		getHomeLocation().getWorld().playEffect(getHomeLocation(), Effect.STEP_SOUND, 23);
-		getHomeLocation().getWorld().playEffect(getHomeLocation().add(1, 0, 0), Effect.STEP_SOUND, 23);
+		getHomeLocation().getWorld().playEffect(getHomeLocation(), Effect.STEP_SOUND, 137);
+		getHomeLocation().getWorld().playEffect(getHomeLocation().clone().add(1, 0, 0), Effect.STEP_SOUND, 137);
+		setCurrentLocation(getHomeLocation().clone().add(1, 0, 0));
+		CommandBlock cb = (CommandBlock)getHomeLocation().getBlock().getState();
+		cb.setCommand(getMachineUUID().toString());
 		runMachine();
+		getMachineNameCurrent().setDisplay("&ePut Wheat and Sugar in here");
+		getMachineNameHome().setTargetHome(true);
+		getMachineNameHome().setUpdateTime(20);
+		getMachineNameHome().setDisplay("&7" + getOwnerName() + "'s Cookie Machine");
 	}
 
 	@Override
@@ -38,19 +47,37 @@ public class CookieMachine extends Machine implements Listener{
 			@Override
 			public void run() {
 				checkCanRun();
-				if (isRunning() && getHomeLocation().getBlock().getType() == Material.CHEST){
-					Chest b = (Chest) getHomeLocation().getBlock();
-					if (b.getInventory().contains(Material.WHEAT) && b.getInventory().contains(Material.SUGAR)){
-						b.getInventory().remove(Material.WHEAT);
-						b.getInventory().remove(Material.SUGAR);
-
-						b.getWorld().dropItemNaturally(b.getLocation().add(1, 0.5, 0), new ItemStack(Material.COOKIE));
-						b.getWorld().playEffect(b.getLocation(), Effect.BREWING_STAND_BREW, 0);
-						b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, b.getLocation().add(1, 0.5, 0), 15);
+				if (getHomeLocation().getBlock().getType() == Material.COMMAND && getCurrentLocation().getBlock().getType() == Material.CHEST){
+					CommandBlock cb = (CommandBlock)getHomeLocation().getBlock().getState();
+					cb.setCommand(getMachineUUID().toString());
+					cb.update();
+					Chest b = (Chest) getHomeLocation().clone().add(1, 0, 0).getBlock().getState();
+					if (isRunning()) {
+						if (b.getInventory().contains(Material.WHEAT) && b.getInventory().contains(Material.SUGAR)) {
+							getMachineNameHome().setDisplay("&a" + getOwnerName() + "'s Cookie Machine  ✔");
+							ItemStack sugar = b.getInventory().getItem(b.getInventory().first(Material.SUGAR));
+							b.getInventory().getItem(b.getInventory().first(Material.SUGAR)).setAmount(sugar.getAmount() - 1);
+							ItemStack wheat = b.getInventory().getItem(b.getInventory().first(Material.WHEAT));
+							b.getInventory().getItem(b.getInventory().first(Material.WHEAT)).setAmount(wheat.getAmount() - 1);
+							b.getWorld().playEffect(b.getLocation(), Effect.BREWING_STAND_BREW, 0);
+							b.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
+							b.getWorld().dropItemNaturally(getHomeLocation().add(0.5, 1.5, 0.5), new ItemStack(Material.COOKIE));
+							cookiesMade++;
+							getMachineNameCurrent().setDisplay("");
+						} else {
+							getMachineNameCurrent().setDisplay("&ePut Wheat and Sugar in here");
+							getMachineNameHome().setDisplay("&7" + getOwnerName() + "'s Cookie Machine  ?");
+							b.getWorld().playSound(b.getLocation().add(0, 0, 0), Sound.BLOCK_DISPENSER_FAIL, 1, 1);
+							b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
+						}
 					}else{
-						b.getWorld().playSound(b.getLocation().add(1, 0, 0), Sound.BLOCK_DISPENSER_FAIL, 1, 1);
-						b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, b.getLocation().add(1, 0.5, 0), 15);
+						getMachineNameCurrent().setDisplay("&ePut Wheat and Sugar in here");
+						getMachineNameHome().setDisplay("&c" + getOwnerName() + "'s Cookie Machine  X");
+						b.getWorld().spawnParticle(Particle.BARRIER, getHomeLocation().clone().add(0.5, 1.5, 0.5), 5, 0, 0, 0);
 					}
+				}else{
+					destroy("home or current location is not machine. expected COMMAND and CHEST, but got: \n" + getHomeLocation().getBlock().getType() + " and " + getCurrentLocation().getBlock().getType());
+					getTask().cancel();
 				}
 			}
 		}, 20, 20));
@@ -58,6 +85,10 @@ public class CookieMachine extends Machine implements Listener{
 
 	private void checkCanRun(){
 		setRunning(getHomeLocation().getBlock().isBlockPowered());
+		/*  || getHomeLocation().add(1, 0, 0).getBlock().isBlockPowered() ||
+			getHomeLocation().add(0, 1, 0).getBlock().isBlockPowered() || getHomeLocation().add(0, 0, 1).getBlock().isBlockPowered() ||
+			getHomeLocation().add(-1, 0, 0).getBlock().isBlockPowered() || getHomeLocation().add(0, -1, 0).getBlock().isBlockPowered() ||
+			getHomeLocation().add(0, 0, -1).getBlock().isBlockPowered()*/
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -69,4 +100,8 @@ public class CookieMachine extends Machine implements Listener{
 		}
 	}
 
+	@Override
+	protected String getExtraInformation() {
+		return "Cookies Made: " + cookiesMade;
+	}
 }

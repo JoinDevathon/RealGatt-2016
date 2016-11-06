@@ -26,11 +26,13 @@ public class DevathonPlugin extends JavaPlugin {
 	    this.inst = this;
 	    registerRecipes();
 	    this.machineManager = new MachineManager();
+	    Bukkit.getPluginManager().registerEvents(getMachineManager(), this);
     }
 
     @Override
     public void onDisable() {
 	    for (Machine m : getMachineManager().getAllMachines()){
+		    m.destroy("server shutdown");
 	    }
     }
 
@@ -44,7 +46,7 @@ public class DevathonPlugin extends JavaPlugin {
 	    im.setLore(loreList);
 	    im.addItemFlags(ItemFlag.values());
 	    im.spigot().setUnbreakable(true);
-	    im.addEnchant(Enchantment.DURABILITY, 1, true);
+	    im.addEnchant(Enchantment.DAMAGE_ALL, 1, true);
 	    miningMachine.setItemMeta(im);
 	    ShapelessRecipe machineRecipe = new ShapelessRecipe(miningMachine);
 	    machineRecipe.addIngredient(2, Material.REDSTONE)
@@ -52,13 +54,13 @@ public class DevathonPlugin extends JavaPlugin {
 			    .addIngredient(1, Material.CHEST)
 			    .addIngredient(1, Material.STONE_BUTTON);
 
-	    ItemStack cookieMachine = new ItemStack(Material.COMMAND_CHAIN);
+	    ItemStack cookieMachine = new ItemStack(Material.COMMAND);
 	    im = cookieMachine.getItemMeta();
 	    im.setDisplayName(color("&dCookie Machine &7[&eNo Name&7]"));
 	    im.setLore(loreList);
 	    im.addItemFlags(ItemFlag.values());
 	    im.spigot().setUnbreakable(true);
-	    im.addEnchant(Enchantment.DURABILITY, 2, true);
+	    im.addEnchant(Enchantment.DURABILITY, 1, true);
 	    cookieMachine.setItemMeta(im);
 	    ShapelessRecipe cookieRecipe = new ShapelessRecipe(cookieMachine);
 	    cookieRecipe.addIngredient(2, Material.REDSTONE)
