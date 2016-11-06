@@ -116,15 +116,15 @@ public class MachineManager implements Listener{
 	}
 
 	@EventHandler
-	private void onMachineInteract(PlayerInteractEvent e){
-		if (e.getAction().name().toLowerCase().contains("right")){
-			if (e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.COMMAND){
+	private void onMachineInteract(PlayerInteractEvent e) {
+		if (e.getAction().name().toLowerCase().contains("right")) {
+			if (e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.COMMAND) {
 				e.setCancelled(true);
-				CommandBlock cb = (CommandBlock)e.getClickedBlock().getState();
+				CommandBlock cb = (CommandBlock) e.getClickedBlock().getState();
 				if (!cb.getCommand().equalsIgnoreCase("")) {
-					try{
+					try {
 						UUID.fromString(cb.getCommand());
-					}catch (IllegalArgumentException iae){
+					} catch (IllegalArgumentException iae) {
 						return;
 					}
 					Machine machine = getMachineFromKey(cb.getCommand());
@@ -138,13 +138,16 @@ public class MachineManager implements Listener{
 							CookieMachine cm = (CookieMachine) machine;
 							e.getPlayer().sendMessage(cm.getMachineStatus());
 						}
-					} else {
-						e.getPlayer().sendMessage(ChatColor.RED + "This isn't your Machine!");
+						if (machine instanceof MiningMachine) {
+							MiningMachine cm = (MiningMachine) machine;
+							e.getPlayer().sendMessage(cm.getMachineStatus());
+						} else {
+							e.getPlayer().sendMessage(ChatColor.RED + "This isn't your Machine!");
+						}
 					}
 				}
 			}
 		}
 	}
-
 
 }

@@ -22,7 +22,9 @@ import org.devathon.contest2016.DevathonPlugin;
 import org.devathon.contest2016.utils.Reflection;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -45,6 +47,8 @@ public class MiningMachine extends Machine implements Listener{
 
 	private Zombie miner;
 	private MachineName minerName;
+
+	private ArrayList<String> log = new ArrayList<>();
 
 	private long fuel = 0;
 
@@ -97,7 +101,10 @@ public class MiningMachine extends Machine implements Listener{
 		miner.setRemoveWhenFarAway(false);
 
 		runMachine();
+	}
 
+	private void logItem(String s){
+		log.add("(" + new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(System.currentTimeMillis())) + ") " + s);
 	}
 
 	@Override
@@ -228,9 +235,9 @@ public class MiningMachine extends Machine implements Listener{
 		}
 
 		if (currentState == State.SCANNING){
-
 			if (scannedDistance <= 50) {
 				scannedDistance += 15;
+				logItem("Beginning scan with radius " + scannedDistance);
 				for (Block b : BlockLooping.loopSphere(miner.getLocation(), scannedDistance, true)) {
 					if (b.getType().name().toLowerCase().replace("_", " ").contains(" ore")) {
 						if (!ores.contains(b) && surroundedByAir(b.getLocation())) {
@@ -258,7 +265,16 @@ public class MiningMachine extends Machine implements Listener{
 			}
 		}else{
 			miner.getWorld().playSound(miner.getLocation(), Sound.ENTITY_IRONGOLEM_STEP, 2, 2);
-			if (getHomeLocation().distance(miner.getLocation()) > 100){
+
+			if (getHomeLocation().distance(miner.getLocation()) < 1 && currentState == State.RETURNINGHOME){
+				currentState = State.SCANNING;
+				scannedDistance = 0;
+				if (!log.get(0).contains("Nothing else to mine. Heading home.")) {
+					logItem("Nothing else to mine. Heading home.");
+				}
+				return;
+			}
+			if (getHomeLocation().distance(miner.getLocation()) > 100 || closestOre == null){
 				currentState = State.RETURNINGHOME;
 			}
 			else{
@@ -272,12 +288,14 @@ public class MiningMachine extends Machine implements Listener{
 					miningPoints++;
 					closestOre.getWorld().playEffect(closestOre.getLocation(), Effect.STEP_SOUND, closestOre.getType().getId());
 					if (miningPoints == 3){
+						logItem("Boyah! Mined a " + closestOre.getType().name());
 						closestOre.breakNaturally(new ItemStack(Material.IRON_PICKAXE));
 						miningPoints = 0;
 						ores.remove(closestOre);
 						closestOre = getNearestBlock(miner.getLocation());
 						currentState = State.WALKING;
 						miner.setAI(true);
+
 					}
 				}else{
 					if (prevLoc == null){
@@ -296,6 +314,7 @@ public class MiningMachine extends Machine implements Listener{
 								if (closestOre.getLocation().getY() < miner.getLocation().getY() - 2){
 									ores.remove(closestOre);
 									closestOre = getNearestBlock(miner.getLocation());
+									logItem("Gave up on getting to an " + closestOre.getType().name()+ ". I'm sorry!!!");
 								}else {
 									boolean goHome = true;
 									if (closestOre.getLocation().getY() > miner.getLocation().getY()){
@@ -310,6 +329,7 @@ public class MiningMachine extends Machine implements Listener{
 												miner.getLocation().add(0, -1, 0).getBlock().setType(Material.DIRT);
 												buildingBlocks.add(miner.getLocation().add(0, -1, 0).getBlock());
 												miner.getWorld().playEffect(miner.getLocation().subtract(0, 1, 0), Effect.STEP_SOUND, 3);
+												logItem("Built up towards a block!");
 												break;
 											}
 										}
@@ -456,5 +476,25 @@ public class MiningMachine extends Machine implements Listener{
 
 	public long getFuel() {
 		return fuel;
+	}
+
+	@Override
+	protected String getExtraInformation() {
+		String r = ChatColor.RED + " Log of latest things done:\n";
+		int count = 10;
+		int done = 0;
+		if (log.size() < 15){
+			count = log.size();
+		}
+		List<String> list = (log.size() > 15 ? log.subList(log.size() - 15, log.size()) : log);
+		for (String s : list){
+			if (done < count) {
+				r += DevathonPlugin.getInst().color("&7[&e#" + done + "&7] &e" + s + "\n");
+				done++;
+			}else{
+				return r;
+			}
+		}
+		return r;
 	}
 }
