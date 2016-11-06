@@ -15,7 +15,9 @@ import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.devathon.contest2016.BlockLooping;
 import org.devathon.contest2016.DevathonPlugin;
+import org.devathon.contest2016.utils.Reflection;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 /**
@@ -270,14 +272,17 @@ public class MiningMachine extends Machine implements Listener{
 		return false;
 	}
 
-	private boolean moveTo(Location l){
+	private boolean moveTo(Location l, double speed){
+		LivingEntity livStand = (LivingEntity)miner;
 		try {
-			Object entityInsentient = Reflection.obcClass("entity.CraftLivingEntity").getMethod("getHandle").invoke(e);
+			Object entityInsentient = Reflection.obcClass("entity.CraftLivingEntity").getMethod("getHandle").invoke(livStand);
 			Object navigation = Reflection.nmsClass("EntityInsentient").getMethod("getNavigation").invoke(entityInsentient);
-			navigation.getClass().getMethod("a", double.class, double.class, double.class, double.class).invoke(navigation, l.getX(), l.getY(), l.getZ(), s.doubleValue());
+			navigation.getClass().getMethod("a", double.class, double.class, double.class, double.class).invoke(navigation, l.getX(), l.getY(), l.getZ(), speed);
 		} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e1) {
 			e1.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
 	@Override
