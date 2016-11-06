@@ -299,6 +299,9 @@ public class MiningMachine extends Machine implements Listener{
 
 					}
 				}else{
+					if (!isOre(closestOre)){
+						closestOre = getNearestBlock(miner.getLocation());
+					}
 					if (prevLoc == null){
 						prevLoc = miner.getLocation();
 					}else{
