@@ -52,7 +52,7 @@ For example; the Cookie machine will tell you how many cookies it's created, whi
 
 ![MineLog](http://i.imgur.com/GpFw9l6.png)
 
-Also I forgot to add a way of destroying machines, so currently you have to go into Creative and break the box, unless I remembered to add the ability to break the chest to disable it.
+Also I forgot to add a way of destroying machines, so currently you have to go into Creative and break the box, unless I remembered to add the ability to break the chest to disable it. **Edit: I did. Just break the chest to disable the system.**
 
 ## Theme
 
