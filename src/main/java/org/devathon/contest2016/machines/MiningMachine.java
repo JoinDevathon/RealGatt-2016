@@ -1,24 +1,30 @@
 package org.devathon.contest2016.machines;
 
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.CommandBlock;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.devathon.contest2016.BlockLooping;
 import org.devathon.contest2016.DevathonPlugin;
 import org.devathon.contest2016.utils.Reflection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Created by zacha on 11/6/2016.
@@ -26,7 +32,7 @@ import java.util.ArrayList;
 public class MiningMachine extends Machine implements Listener{
 
 	private enum State{
-		MINING, RETURNINGHOME, NEEDFUEL, NEEDPOWER, SCANNING
+		MINING, RETURNINGHOME, NEEDFUEL, NEEDPOWER, SCANNING, WALKING
 	}
 
 	private enum Direction{
@@ -37,7 +43,7 @@ public class MiningMachine extends Machine implements Listener{
 
 	private State currentState = State.NEEDPOWER;
 
-	private ArmorStand miner;
+	private Zombie miner;
 	private MachineName minerName;
 
 	private long fuel = 0;
@@ -65,20 +71,30 @@ public class MiningMachine extends Machine implements Listener{
 		minerName.setDisplay("");
 		minerName.setOverrideTarget(true);
 
-		miner = getHomeLocation().getWorld().spawn(getHomeLocation().clone().add(0, -20, 0), ArmorStand.class);
-		miner.setMarker(false);
+		miner = getHomeLocation().getWorld().spawn(getHomeLocation().clone().add(0, -20, 0), Zombie.class);
+		miner.setMaxHealth(2000);
+		miner.setHealth(miner.getMaxHealth());
+		miner.setBaby(true);
+		miner.setAI(false);
+		/*miner.setMarker(false);
 		miner.setSmall(true);
 		miner.setArms(true);
 		miner.setGlowing(false);
 		miner.setBasePlate(false);
 		miner.setGravity(true);
 		miner.setVisible(false);
-		miner.setCollidable(false);
-		miner.getEquipment().setHelmet(new ItemStack(Material.COMMAND));
+		miner.setCollidable(false);*/
+		miner.getEquipment().setHelmet(new ItemStack(Material.IRON_HELMET));
+		miner.setSilent(true);
+		ItemMeta helmmeta = miner.getEquipment().getHelmet().getItemMeta();
+		helmmeta.spigot().setUnbreakable(true);
+		miner.getEquipment().getHelmet().setItemMeta(helmmeta);
 		miner.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_PICKAXE));
 		miner.getEquipment().setItemInOffHand(new ItemStack(Material.TORCH));
 		miner.teleport(getHomeLocation().add(0.5, 1.5, 0.5));
+		miner.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 0, true, false));
 		minerName.setOverrideTargetLocation(getMiner().getLocation());
+		miner.setRemoveWhenFarAway(false);
 
 		runMachine();
 
@@ -99,7 +115,7 @@ public class MiningMachine extends Machine implements Listener{
 						if (getFuel() > 0){
 							runMover();
 							b.getWorld().spawnParticle(Particle.REDSTONE, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
-							if (getFuel() < 100) {
+							if (getFuel() < 95) {
 								if (b.getInventory().contains(Material.COAL)) {
 									ItemStack coal = b.getInventory().getItem(b.getInventory().first(Material.COAL));
 									if (coal.getAmount() - 1 > 0) {
@@ -128,15 +144,18 @@ public class MiningMachine extends Machine implements Listener{
 							getMinerName().setOverrideTargetLocation(miner.getLocation().add(0, 1, 0));
 							getMachineNameCurrent().setDisplay("&aMiner is running.");
 							getMachineNameHome().setDisplay("&aFuel Level: " +  getFuel() +"%");
+							miner.setAI(true);
 						} else {
 							currentState = State.NEEDFUEL;
 							getMinerName().setDisplay("&c&lOUT OF FUEL");
 							getMachineNameHome().setDisplay("&c&lMINER OUT OF FUEL");
+							miner.setAI(false);
 							getMachineNameCurrent().setDisplay("");
 							b.getWorld().playSound(b.getLocation().add(0, 0, 0), Sound.BLOCK_DISPENSER_FAIL, 1, 1);
 							b.getWorld().spawnParticle(Particle.SMOKE_NORMAL, getHomeLocation().clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
 						}
 					}else{
+						miner.setAI(false);
 						if (getFuel() <= 100) {
 							if (b.getInventory().contains(Material.COAL)) {
 								ItemStack coal = b.getInventory().getItem(b.getInventory().first(Material.COAL));
@@ -171,13 +190,23 @@ public class MiningMachine extends Machine implements Listener{
 					getTask().cancel();
 				}
 			}
-		}, 20, 20));
+		}, 5, 5));
 	}
 
 	private long oresFound = 0;
 	private ArrayList<Block> ores = new ArrayList<>();
 	private int scannedDistance = 0;
 	private Block closestOre;
+
+	private int miningPoints = 0, restartPoints = 0;
+
+	private Location prevLoc;
+
+	private Random rnd = new Random();
+
+	private List<Block> buildingBlocks = new ArrayList<>();
+
+	private Block attemptBlock;
 
 	private void runMover(){
 
@@ -200,11 +229,11 @@ public class MiningMachine extends Machine implements Listener{
 
 		if (currentState == State.SCANNING){
 
-			if (scannedDistance <= 100) {
+			if (scannedDistance <= 50) {
 				scannedDistance += 15;
 				for (Block b : BlockLooping.loopSphere(miner.getLocation(), scannedDistance, true)) {
 					if (b.getType().name().toLowerCase().replace("_", " ").contains(" ore")) {
-						if (!ores.contains(b)) {
+						if (!ores.contains(b) && surroundedByAir(b.getLocation())) {
 							if (closestOre == null){
 								closestOre = b;
 							}else{
@@ -228,19 +257,119 @@ public class MiningMachine extends Machine implements Listener{
 				currentState = State.MINING;
 			}
 		}else{
-			minerName.setDisplay("&aMining~ &7(&e" + Math.round(closestOre.getLocation().distance(miner.getLocation())) + " blocks away from target&7)");
+			miner.getWorld().playSound(miner.getLocation(), Sound.ENTITY_IRONGOLEM_STEP, 2, 2);
 			if (getHomeLocation().distance(miner.getLocation()) > 100){
 				currentState = State.RETURNINGHOME;
 			}
+			else{
+				currentState = State.WALKING;
+				if (closestOre.getLocation().distance(miner.getLocation()) < 2){
+					if (rnd.nextInt() * 100 < 20){
+						fuel--;
+					}
+					miner.setAI(false);
+					currentState = State.MINING;
+					miningPoints++;
+					closestOre.getWorld().playEffect(closestOre.getLocation(), Effect.STEP_SOUND, closestOre.getType().getId());
+					if (miningPoints == 3){
+						closestOre.breakNaturally(new ItemStack(Material.IRON_PICKAXE));
+						miningPoints = 0;
+						ores.remove(closestOre);
+						closestOre = getNearestBlock(miner.getLocation());
+						currentState = State.WALKING;
+						miner.setAI(true);
+					}
+				}else{
+					if (prevLoc == null){
+						prevLoc = miner.getLocation();
+					}else{
+						if (prevLoc.distance(miner.getLocation()) < 0.5){
+							restartPoints++;
+							if (restartPoints == 15) {
+								if (attemptBlock != closestOre){
+									if (buildingBlocks.contains(miner.getLocation().subtract(0, 1, 0).getBlock())){
+										buildingBlocks.remove(miner.getLocation().subtract(0, 1, 0).getBlock());
+										miner.getLocation().subtract(0, 1, 0).getBlock().setType(Material.AIR);
+										miner.getWorld().playEffect(miner.getLocation().subtract(0, 1, 0), Effect.STEP_SOUND, 3);
+									}
+								}
+								if (closestOre.getLocation().getY() < miner.getLocation().getY() - 2){
+									ores.remove(closestOre);
+									closestOre = getNearestBlock(miner.getLocation());
+								}else {
+									boolean goHome = true;
+									if (closestOre.getLocation().getY() > miner.getLocation().getY()){
+										attemptBlock = closestOre;
+										for (double y = miner.getLocation().getY(); y < 256; y++){
+											Location tempL = miner.getLocation().clone();
+											tempL.setY(y);
+											if (closestOre.getLocation().distance(tempL) < 3){
+												miner.setAI(false);
+												goHome = false;
+												miner.teleport(miner.getLocation().getBlock().getLocation().add(0.5, 1.5, 0.5));
+												miner.getLocation().add(0, -1, 0).getBlock().setType(Material.DIRT);
+												buildingBlocks.add(miner.getLocation().add(0, -1, 0).getBlock());
+												miner.getWorld().playEffect(miner.getLocation().subtract(0, 1, 0), Effect.STEP_SOUND, 3);
+												break;
+											}
+										}
+									}
+									if (goHome) {
+										currentState = State.RETURNINGHOME;
+									}
+								}
+								restartPoints = 0;
+							}
+						}else{
+							restartPoints--;
+						}
+						prevLoc = miner.getLocation();
+					}
+				}
+			}
 			if (p.isOnline()) {
 				p.getPlayer().spawnParticle(Particle.SMOKE_NORMAL, closestOre.getLocation().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0);
+			}
+			if (currentState == State.WALKING || currentState == State.MINING) {
+				if (rnd.nextInt() * 100 < 40){
+					fuel--;
+				}
+				moveTo(closestOre.getLocation(), 0.6);
+				minerName.setDisplay("&aMining! &7(&e" + Math.round(closestOre.getLocation().distance(miner.getLocation())) + " blocks away from target&7)");
+			}else{
+				if (rnd.nextInt() * 100 < 20){
+					fuel--;
+				}
+				moveTo(getHomeLocation(), 0.8);
+				minerName.setDisplay("&cHeading home!");
 			}
 			movesSinceHome++;
 		}
 
 	}
 
+	private Block getNearestBlock(Location l){
+		Block closestOre = null;
+		for (Block b : ores) {
+			if (closestOre == null){
+				closestOre = b;
+			}else{
+				if (closestOre.getLocation().distance(l) > b.getLocation().distance(l)){
+					closestOre = b;
+				}
+			}
+		}
+		return closestOre;
+	}
+
+	private boolean surroundedByAir(Location l){
+		return l.clone().add(1, 0, 0).getBlock().getType().isTransparent()|| l.clone().add(-1, 0, 0).getBlock().getType().isTransparent()||
+				l.clone().add(0, -1, 0).getBlock().getType().isTransparent() || l.clone().add(0, 1, 0).getBlock().getType().isTransparent() ||
+				l.clone().add(0, 0, 1).getBlock().getType().isTransparent() || l.clone().add(0, 0, -1).getBlock().getType().isTransparent();
+	}
+
 	private boolean move(Direction direction){
+		miner.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(500);
 		Location targLoc = miner.getLocation();
 		float yaw = 0;
 		if (direction == Direction.NORTH){
@@ -273,6 +402,7 @@ public class MiningMachine extends Machine implements Listener{
 	}
 
 	private boolean moveTo(Location l, double speed){
+		miner.setAI(true);
 		LivingEntity livStand = (LivingEntity)miner;
 		try {
 			Object entityInsentient = Reflection.obcClass("entity.CraftLivingEntity").getMethod("getHandle").invoke(livStand);
@@ -296,10 +426,19 @@ public class MiningMachine extends Machine implements Listener{
 	}
 
 	@EventHandler
-	private void onStandClick(PlayerInteractAtEntityEvent e){
-		if (e.getRightClicked() == miner){
+	private void onMinerDamage(EntityDamageEvent e){
+		if (e.getEntity() == miner){
 			e.setCancelled(true);
 			minerName.setDisplay("&eBoop!");
+		}
+	}
+
+	@EventHandler
+	private void onMinerTarget(EntityTargetEvent e){
+		if (e.getTarget() != null) {
+			if (e.getEntity() == miner && e.getTarget().getType() == EntityType.PLAYER) {
+				e.setCancelled(true);
+			}
 		}
 	}
 
@@ -307,7 +446,7 @@ public class MiningMachine extends Machine implements Listener{
 		setRunning(getHomeLocation().getBlock().isBlockPowered() && getFuel() > 0);
 	}
 
-	public ArmorStand getMiner() {
+	public Zombie getMiner() {
 		return miner;
 	}
 
